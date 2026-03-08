@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Entry {
+  id        String     @id @default(cuid())
+  title     String
+  body      String
+  date      DateTime   @default(now())
+  tags      Tag[]      @relation("EntryTags")
+  resources Resource[] @relation("EntryResources")
+  projectId String?
+  project   Project?   @relation(fields: [projectId], references: [id])
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Project {
+  id          String     @id @default(cuid())
+  name        String
+  description String
+  status      String     @default("Idea")
+  liveUrl     String?
+  repoUrl     String?
+  tags        Tag[]      @relation("ProjectTags")
+  entries     Entry[]
+  resources   Resource[] @relation("ProjectResources")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Resource {
+  id          String    @id @default(cuid())
+  url         String
+  title       String
+  category    String    @default("Article")
+  notes       String?
+  isRead      Boolean   @default(false)
+  isFavourite Boolean   @default(false)
+  tags        Tag[]     @relation("ResourceTags")
+  entries     Entry[]   @relation("EntryResources")
+  projects    Project[] @relation("ProjectResources")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Tag {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  entries   Entry[]    @relation("EntryTags")
+  projects  Project[]  @relation("ProjectTags")
+  resources Resource[] @relation("ResourceTags")
+}
